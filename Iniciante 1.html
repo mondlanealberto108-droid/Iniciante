@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+   <style>
+  .fundo-escuro {
+    background-color: #111;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .letra-neon {
+    font-family: sans-serif;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow:
+      0 0 7px #fff,
+      0 0 15px #ff00de,
+      0 0 30px #ff00de,
+      0 0 60px #ff00de;
+  }
+</style>
+
+<div class="fundo-escuro">
+  <div class="letra-neon"> BEM-VINDO!
+    <br>
+    ESTUDA FÍSICA COMIGO
+  </div>
+</div>
+<style>
+  .fundo-escuro {
+    background-color: #111;
+    padding: 40px;
+    text-align: center;
+  }
+
+</style>
+
+  <br>
+  
+<div class="autor-abaixo">
+  <span>Professor Alberto Da Crescilda Mondlane </span>
+</div>
+
+</div>
+
+ 
+<!-- PAINEL DE PESQUISA E BIBLIOTECA -->
+<section style="max-width:1000px;margin:25px auto;padding:20px;font-family:Arial, sans-serif;">
+
+  <!-- 1. PESQUISA DE FÍSICA -->
+  <div id="secao-pesquisa">
+    <h2>Pesquisar Física</h2>
+    <input type="text" id="pergunta" placeholder="Escreva um assunto de Física..." style="width:70%;padding:12px;border:1px solid #ccc;border-radius:6px;">
+    <button type="button" onclick="pesquisarFisica()" style="padding:12px;background:#0878df;color:white;border:0;border-radius:6px;cursor:pointer;">
+      Pesquisar
+    </button>
+    <button type="button" onclick="abrirGoogle()" style="padding:12px;background:#475569;color:white;border:0;border-radius:6px;cursor:pointer;">
+      Google
+    </button>
+    <p id="estado"></p>
+    <div id="respostas"></div>
+  </div>
+
+  <hr style="margin:30px 0;">
+
+  <!-- 2. BIBLIOTECA DE MANUAIS DO SITE -->
+  <div id="secao-biblioteca">
+    <h2>Biblioteca de Manuais de Física</h2>
+    <p style="color:#475569;font-size:14px;">Seleccione um manual abaixo para ler directamente no site ou descarregar.</p>
+
+    <!-- Lista onde os manuais do site vão aparecer -->
+    <div id="listaManuaisSite"></div>
+
+    <!-- Visualizador de PDF -->
+    <div id="areaVisualizador" style="display:none; margin-top:20px; padding:15px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 id="nomeManualAberto" style="margin:0; color:#0f172a;"></h3>
+        <button type="button" onclick="fecharPDF()" style="padding:8px 14px;background:#dc3545;color:white;border:0;border-radius:6px;cursor:pointer;">
+          Fechar manual
+        </button>
+      </div>
+      <iframe id="visualizadorPDF" width="100%" height="600" style="border:1px solid #ccc; border-radius:6px; background:white;"></iframe>
+    </div>
+  </div>
+
+  <hr style="margin:30px 0;">
+
+  <!-- 3. HISTÓRICO -->
+  <div id="secao-historico">
+    <h2>Histórico de Pesquisas</h2>
+    <div id="historico"></div>
+  </div>
+
+</section>
+
+<script>
+  // =========================================
+  // CONFIGURAÇÃO DOS MANUAIS DO SITE
+  // =========================================
+  const MANUAIS_DO_SITE = [
+    {
+      titulo: "Física - 8.ª Classe",
+      arquivo: "Fisica-8a-Classe.pdf"
+    },
+    {
+      titulo: "Física 2 - 8.ª Classe",
+      arquivo: "Fisica 8a classe.pdf"
+    },
+    {
+      titulo: "Física - 9.ª Classe",
+      arquivo: "Fisica 9a classe (ENM)pdf www.soudemoz.com.pdf"
+    },
+    {titulo: "Física - 12.ª Classe",
+      arquivo: "Fisica12.pdf"
+    }
+  ];
+
+  // =========================================
+  // 1. RENDERIZAR MANUAIS DO SITE
+  // =========================================
+  function carregarManuaisDoSite() {
+    const container = document.getElementById("listaManuaisSite");
+    container.innerHTML = "";
+
+    MANUAIS_DO_SITE.forEach(manual => {
+      const card = document.createElement("div");
+      card.style.cssText = "padding:15px; margin:12px 0; border:1px solid #ddd; border-radius:8px; background:#fff; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;";
+
+      const titulo = document.createElement("strong");
+      titulo.style.fontSize = "16px";
+      titulo.textContent = manual.titulo;
+
+      const botoes = document.createElement("div");
+
+      const btnAbrir = document.createElement("button");
+      btnAbrir.type = "button";
+      btnAbrir.textContent = "Ler no site";
+      btnAbrir.style.cssText = "padding:9px 14px; background:#0878df; color:#fff; border:0; border-radius:6px; cursor:pointer;";
+      btnAbrir.onclick = () => abrirPDF(manual.titulo, manual.arquivo);
+
+      const btnBaixar = document.createElement("a");
+      btnBaixar.href = manual.arquivo;
+      btnBaixar.download = "";
+      btnBaixar.textContent = "Descarregar PDF";
+      btnBaixar.style.cssText = "display:inline-block; padding:9px 14px; background:#475569; color:#fff; text-decoration:none; border-radius:6px; font-size:13.3px; margin-left:8px;";
+
+      botoes.append(btnAbrir, btnBaixar);
+      card.append(titulo, botoes);
+      container.appendChild(card);
+    });
+  }
+
+  function abrirPDF(titulo, caminhoArquivo) {
+    document.getElementById("nomeManualAberto").textContent = titulo;
+    document.getElementById("visualizadorPDF").src = caminhoArquivo;
+    const area = document.getElementById("areaVisualizador");
+    area.style.display = "block";
+    area.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function fecharPDF() {
+    document.getElementById("visualizadorPDF").src = "about:blank";
+    document.getElementById("areaVisualizador").style.display = "none";
+  }
+
+  // =========================================
+  // 2. PESQUISA DE FÍSICA (WIKIPÉDIA)
+  // =========================================
+  async function pesquisarFisica() {
+    const termo = document.getElementById("pergunta").value.trim();
+    const estado = document.getElementById("estado");
+    const respostas = document.getElementById("respostas");
+    respostas.innerHTML = "";
+
+    if (!termo) {
+      estado.innerText = "Escreva um assunto para pesquisar.";
+      return;
+    }
+
+    estado.innerText = "A pesquisar...";
+    guardarPesquisa(termo);
+
+    try {
+      async function pesquisarIdioma(idioma) {
+        const url = `https://${idioma}.wikipedia.org/w/api.php?` + new URLSearchParams({
+          action: "query",
+          list: "search",
+          srsearch: termo,
+          srlimit: "5",
+          format: "json",
+          origin: "*"
+        });
+        const r = await fetch(url);
+        if (!r.ok) throw new Error("Falha na pesquisa");
+        const dados = await r.json();
+        return dados.query.search;
+      }
+
+      let idioma = "pt";
+      let artigos = await pesquisarIdioma("pt");
+
+      if (!artigos.length) {
+        idioma = "en";
+        artigos = await pesquisarIdioma("en");
+      }
+
+      if (!artigos.length) {
+        estado.innerText = "Nenhum resultado encontrado.";
+        return;
+      }
+
+      for (const artigo of artigos) {
+        const url = `https://${idioma}.wikipedia.org/w/api.php?` + new URLSearchParams({
+          action: "query",
+          prop: "extracts|info",
+          titles: artigo.title,
+          exintro: "1",
+          explaintext: "1",
+          inprop: "url",
+          format: "json",
+          origin: "*"
+        });
+        const r = await fetch(url);
+        const dados = await r.json();
+        const pagina = Object.values(dados.query.pages)[0];
+        if (!pagina || !pagina.extract) continue;
+
+        const caixa = document.createElement("div");
+        caixa.style.cssText = "background:#f5f8fc;padding:15px;margin:12px 0;border-left:4px solid #0878df;border-radius:7px;";
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = pagina.title;
+
+        const texto = document.createElement("p");
+        texto.textContent = pagina.extract;
+
+        const link = document.createElement("a");
+        link.href = pagina.fullurl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Consultar fonte";
+
+        caixa.append(titulo, texto, link);
+        respostas.appendChild(caixa);
+      }
+
+      estado.innerText = "Pesquisa concluída.";
+    } catch (erro) {
+      estado.innerText = "Erro de ligação. Verifique a Internet.";
+    }
+  }
+
+  function abrirGoogle() {
+    const termo = document.getElementById("pergunta").value.trim();
+    if (!termo) return;
+    window.open(
+      "https://google.com" + encodeURIComponent(termo + " Física"),
+      "_blank"
+    );
+  }
+
+  // =========================================
+  // 3. HISTÓRICO DE PESQUISAS
+  // =========================================
+  let pesquisas = JSON.parse(localStorage.getItem("historicoFisica") || "[]");
+
+  function guardarPesquisa(termo) {
+    pesquisas = pesquisas.filter(p => p.toLowerCase() !== termo.toLowerCase());
+    pesquisas.unshift(termo);
+    pesquisas = pesquisas.slice(0, 20);
+    localStorage.setItem("historicoFisica", JSON.stringify(pesquisas));
+    mostrarHistorico();
+  }
+
+  function mostrarHistorico() {
+    const area = document.getElementById("historico");
+    area.innerHTML = "";
+
+    pesquisas.forEach(termo => {
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.textContent = termo;
+      botao.style.cssText = "margin:5px; padding:8px 12px; background:#e2e8f0; border:0; border-radius:5px; cursor:pointer;";
+      botao.onclick = () => {
+        document.getElementById("pergunta").value = termo;
+        pesquisarFisica();
+      };
+      area.appendChild(botao);
+    });
+  }
+
+  // =========================================
+  // INICIALIZAÇÃO
+  // =========================================
+  document.getElementById("pergunta").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      pesquisarFisica();
+    }
+  });
+
+  carregarManuaisDoSite();
+  mostrarHistorico();
+</script>
+
+</script>
+
+</body>
+</html>
